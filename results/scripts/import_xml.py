@@ -11,7 +11,7 @@ DB_PARAMS = {
 }
 
 # XML-Datei laden
-xml_file = "/mnt/data/Lets_Meet_Hobbies.xml"
+xml_file = "data/Lets_Meet_Hobbies.xml"
 tree = ET.parse(xml_file)
 root = tree.getroot()
 

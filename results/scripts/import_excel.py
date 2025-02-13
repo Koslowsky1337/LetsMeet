@@ -13,7 +13,7 @@ DB_PARAMS = {
 }
 
 # Lade die Excel-Datei
-file_path = "/mnt/data/Lets Meet DB Dump.xlsx"
+file_path = "data/Lets Meet DB Dump.xlsx"
 df = pd.read_excel(file_path)
 
 # Spalten formatieren: Namen splitten und Adresse extrahieren
