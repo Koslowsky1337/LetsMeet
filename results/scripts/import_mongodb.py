@@ -6,7 +6,8 @@ from datetime import datetime
 # MongoDB-Verbindung herstellen
 def connect_to_mongo():
     client = pymongo.MongoClient("mongodb://localhost:27017/")
-    db = client["lets_meet_db"]
+    # Änderung: Verwende "LetsMeet" statt "lets_meet_db"
+    db = client["LetsMeet"]
     return db["users"]
 
 # PostgreSQL-Verbindung herstellen
@@ -38,13 +39,13 @@ def import_mongo_to_postgres():
                 INSERT INTO Users (email, first_name, last_name, phone)
                 VALUES (%s, %s, %s, %s)
                 ON CONFLICT (email) DO NOTHING
-                RETURNING id;
+                RETURNING user_id;
             """),
             (email, first_name, last_name, phone)
         )
         user_id = cursor.fetchone()
         if not user_id:
-            cursor.execute("SELECT id FROM Users WHERE email = %s;", (email,))
+            cursor.execute("SELECT user_id FROM Users WHERE email = %s;", (email,))
             user_id = cursor.fetchone()[0]
         else:
             user_id = user_id[0]
@@ -59,7 +60,7 @@ def import_mongo_to_postgres():
             cursor.execute(
                 sql.SQL("""
                     INSERT INTO Likes (user_id, liked_user_id, status, timestamp)
-                    VALUES (%s, (SELECT id FROM Users WHERE email = %s), %s, %s)
+                    VALUES (%s, (SELECT user_id FROM Users WHERE email = %s), %s, %s)
                     ON CONFLICT DO NOTHING;
                 """),
                 (user_id, liked_email, status, timestamp)
@@ -76,7 +77,7 @@ def import_mongo_to_postgres():
             cursor.execute(
                 sql.SQL("""
                     INSERT INTO Messages (sender_id, receiver_id, conversation_id, message, timestamp)
-                    VALUES (%s, (SELECT id FROM Users WHERE email = %s), %s, %s, %s)
+                    VALUES (%s, (SELECT user_id FROM Users WHERE email = %s), %s, %s, %s)
                     ON CONFLICT DO NOTHING;
                 """),
                 (user_id, receiver_email, conversation_id, message_text, timestamp)
@@ -89,4 +90,4 @@ def import_mongo_to_postgres():
 if __name__ == "__main__":
     print("Importiere Daten aus MongoDB in die PostgreSQL-Datenbank...")
     import_mongo_to_postgres()
-    print("Datenimport abgeschlossen!")
+    print("MongoDB erfolgreich importiert!")
