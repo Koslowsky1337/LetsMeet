@@ -2,11 +2,25 @@
 import subprocess
 import sys
 
+# Absoluter Pfad zum Ordner, in dem sich die Skripte und die SQL-Datei befinden.
+BASE_PATH = "results/scripts"
+
 def run_sql():
-    # Beispiel: Ausführen der SQL-Datei mit SQLite und der Datenbank "database.db"
-    sql_command = "psql -h localhost -p 5432 -U user -d lf8_lets_meet_db -f create_tables.sql"
+    # Absoluter Pfad zur SQL-Datei
+    sql_file = f"{BASE_PATH}/create_tables.sql"
     print("Führe create_tables.sql aus...")
-    result = subprocess.run(sql_command, shell=True)
+    # Öffne die SQL-Datei und leite ihren Inhalt als stdin an den docker exec Befehl weiter.
+    try:
+        with open(sql_file, "rb") as f:
+            result = subprocess.run(
+                ["docker", "exec", "-i", "lf8_lets_meet_postgres_container",
+                "psql", "-U", "user", "-d", "lf8_lets_meet_db"],
+                stdin=f
+            )
+    except FileNotFoundError:
+        print(f"Datei nicht gefunden: {sql_file}", file=sys.stderr)
+        sys.exit(1)
+        
     if result.returncode != 0:
         print("Fehler beim Ausführen von create_tables.sql", file=sys.stderr)
         sys.exit(result.returncode)
@@ -14,9 +28,10 @@ def run_sql():
         print("create_tables.sql erfolgreich ausgeführt.")
 
 def run_script(script_name):
+    # Absoluter Pfad zum Python-Skript
+    script_file = f"{BASE_PATH}/{script_name}"
     print(f"Führe {script_name} aus...")
-    # Je nach Umgebung ggf. "python3" statt "python" verwenden
-    result = subprocess.run(["python", script_name])
+    result = subprocess.run(["python", script_file])
     if result.returncode != 0:
         print(f"Fehler beim Ausführen von {script_name}", file=sys.stderr)
         sys.exit(result.returncode)
