@@ -2,6 +2,7 @@ import pandas as pd
 import psycopg2
 import re
 from psycopg2 import sql
+from datetime import datetime
 
 # PostgreSQL-Verbindungsdaten
 DB_PARAMS = {
@@ -43,6 +44,14 @@ for _, row in df.iterrows():
     else:
         address_id = address_id[0]
 
+    # Konvertiere das Datum ins richtige Format
+    birthdate_str = row['Geburtsdatum']
+    try:
+        birth_date = datetime.strptime(birthdate_str, "%d.%m.%Y").date()
+    except Exception as e:
+        print(f"Fehler beim Parsen des Datums {birthdate_str}: {e}")
+        continue
+
     # Benutzer speichern und user_id abrufen
     cur.execute("""
         INSERT INTO Users (email, first_name, last_name, address_id, phone, gender, interested_in, birthdate)
@@ -50,7 +59,7 @@ for _, row in df.iterrows():
         ON CONFLICT (email) DO NOTHING
         RETURNING user_id;
     """, (row['E-Mail'], row['first_name'], row['last_name'], address_id, row['Telefon'],
-        row['Geschlecht (m/w/nonbinary)'], row['Interessiert an'], row['Geburtsdatum']))
+        row['Geschlecht (m/w/nonbinary)'], row['Interessiert an'], birth_date))
     
     user_id = cur.fetchone()
     if user_id is None:
