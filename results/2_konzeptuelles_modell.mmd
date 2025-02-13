@@ -1,0 +1,74 @@
+erDiagram
+    %% ---------------------------------------------------------
+    %% Entitäten (konzeptuelles Modell)
+    %% ---------------------------------------------------------
+    
+    Address {
+        string street
+        string houseNumber
+        string postalCode
+        string city
+    }
+
+    User {
+        string email
+        string firstName
+        string lastName
+        string phone
+        string gender
+        string interestedIn
+        date birthdate
+    }
+
+    Hobby {
+        string hobbyName
+    }
+
+    UserHobby {
+        number priority
+    }
+
+    Friendship {
+        string status
+    }
+
+    Like {
+        string likeStatus
+        date likeTime
+    }
+
+    Message {
+        number conversationId
+        string messageText
+        date messageTime
+    }
+
+    ProfilePicture {
+        string imageData
+    }
+
+    AdditionalPhoto {
+        string imageData
+        string addPicLink
+    }
+
+    %% ---------------------------------------------------------
+    %% Beziehungen (konzeptuell)
+    %% ---------------------------------------------------------
+
+    Address ||--|{ User : "HAS"
+
+    User ||--|{ UserHobby : "HAS"
+    Hobby ||--|{ UserHobby : "HAS"
+
+    User ||--|{ Friendship : "user1"
+    User ||--|{ Friendship : "user2"
+
+    User ||--|{ Like : "user"
+    User ||--|{ Like : "likedUser"
+
+    User ||--|{ Message : "sender"
+    User ||--|{ Message : "receiver"
+
+    User ||--|{ ProfilePicture : "HAS"
+    User ||--|{ AdditionalPhoto : "HAS"
