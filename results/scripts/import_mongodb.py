@@ -59,29 +59,32 @@ def import_mongo_to_postgres():
             # Like verarbeiten
             cursor.execute(
                 sql.SQL("""
-                    INSERT INTO Likes (user_id, liked_user_id, status, timestamp)
+                    INSERT INTO Likes (user_id, liked_user_id, like_status, like_time)
                     VALUES (%s, (SELECT user_id FROM Users WHERE email = %s), %s, %s)
                     ON CONFLICT DO NOTHING;
                 """),
                 (user_id, liked_email, status, timestamp)
             )
 
-        # Nachrichten einfügen
-        for message in document.get("messages", []):
-            conversation_id = message.get("conversation_id")
-            receiver_email = message.get("receiver_email")
-            message_text = message.get("message")
-            timestamp = message.get("timestamp")
+            # Nachrichten einfügen
+            for message in document.get("messages", []):
+                conversation_id = message.get("conversation_id")
+                receiver_email = message.get("receiver_email")
+                message_text = message.get("message")
+                timestamp = message.get("timestamp")
 
-            # Nachricht verarbeiten
-            cursor.execute(
-                sql.SQL("""
-                    INSERT INTO Messages (sender_id, receiver_id, conversation_id, message, timestamp)
-                    VALUES (%s, (SELECT user_id FROM Users WHERE email = %s), %s, %s, %s)
-                    ON CONFLICT DO NOTHING;
-                """),
-                (user_id, receiver_email, conversation_id, message_text, timestamp)
-            )
+                # Nachricht verarbeiten – hier wird "message_time" statt "timestamp" verwendet,
+                # da in der create_tables.sql vermutlich die Spalte "message_time" definiert ist.
+                cursor.execute(
+                    sql.SQL("""
+                        INSERT INTO Messages (sender_id, receiver_id, conversation_id, message_text, message_time)
+                        VALUES (%s, (SELECT user_id FROM Users WHERE email = %s), %s, %s, %s)
+                        ON CONFLICT DO NOTHING;
+                    """),
+                    (user_id, receiver_email, conversation_id, message_text, timestamp)
+                )
+
+
 
     postgres_conn.commit()
     cursor.close()
@@ -90,4 +93,4 @@ def import_mongo_to_postgres():
 if __name__ == "__main__":
     print("Importiere Daten aus MongoDB in die PostgreSQL-Datenbank...")
     import_mongo_to_postgres()
-    print("MongoDB erfolgreich importiert!")
+    print("MongoDB import erfolgreich!")
